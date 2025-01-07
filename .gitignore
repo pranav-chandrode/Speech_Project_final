@@ -1,3 +1,5 @@
 dest_wav_file/
 LibriSpeech/
 save_json/
+test.py
+test2.py
