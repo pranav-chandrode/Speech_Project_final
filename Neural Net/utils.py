@@ -36,7 +36,7 @@ class TextProcess:
         self.index_map = {}
 
         for line in char_map_str.strip().split('\n'):
-            ch , index = line.split(" ")
+            ch , index = line.strip().split(" ")
             self.char_map[ch] = int(index)
             self.index_map[int(index)] = ch
         self.index_map[1] = " "

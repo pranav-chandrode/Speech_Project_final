@@ -6,7 +6,7 @@ import numpy as np
 from utils import TextProcess
 
 class SpecAugment(nn.Module):
-    def __init__(self, rate, policy=3, freq_mask=15, time_mask=35, overriding_rate=0.9):
+    def __init__(self, rate, policy=3, freq_mask=15, time_mask=35, overriding_rate=0.8):
         super().__init__()
         self.rate = rate
         self.overriding_rate = overriding_rate
@@ -37,7 +37,7 @@ class SpecAugment(nn.Module):
         complex_specgram = stft_transform(x)
 
         transform =  self.time_stretch(complex_specgram, 0.9)
-        transform =  self.time_stretch(complex_specgram, 1.2)
+        # transform =  self.time_stretch(complex_specgram, 0.8)
 
         inverse_stft_transform  = torchaudio.transforms.InverseSpectrogram(n_fft=400)  # converting complex spectrogram to non-complex spectrogram 
         non_complex_spectrogram = inverse_stft_transform(transform)
@@ -144,5 +144,32 @@ class Data(torch.utils.data.Dataset):
         
 
 
+def collate_fn_pad(data):
+    """ 
+    Function to pad the spectrogram of different sizes to make them eaqual
+    """
 
+    spectrogram_list = []
+    label_list = []
+    spec_len_list = []
+    label_len_list = []
+
+    for spectrogram, label,spec_len,label_len in data:
+        if spectrogram is None:
+            continue
+        
+        # print("spectrogram.shape : ", spectrogram.shape)
+        # new_spectrogram = spectrogram.squeeze(0).transpose(0,1)
+        # print("new_spectrogram.shape : ",new_spectrogram.shape)
+        spectrogram_list.append(spectrogram.squeeze(0).transpose(0,1))
+        label_list.append(torch.Tensor(label))  # rnn.pad_sequence expects tensor
+        spec_len_list.append(spec_len)
+        label_len_list.append(label_len)
+
+
+    spectrogram_list = nn.utils.rnn.pad_sequence(spectrogram_list,batch_first=True,padding_value=0).transpose(1,2).unsqueeze(1)
+    label_list = nn.utils.rnn.pad_sequence(label_list,batch_first=True,padding_value=0)
+
+
+    return spectrogram_list, label_list, spec_len_list,label_len_list
 
