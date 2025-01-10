@@ -147,6 +147,23 @@ class Data(torch.utils.data.Dataset):
 def collate_fn_pad(data):
     """ 
     Function to pad the spectrogram of different sizes to make them eaqual
+
+
+
+    we have shape of spectrograms = [1,81,x]   [channel, feature, time]   81 -> we set n_mel =81 in MelSpectrogram 
+    now this x can vary in corresponding to the length of audio input, so in order to have batches of same size we will use rnn.pad_sequence
+
+    in order to use pad_sequence the last dimension of all the elements should be same.
+
+    so, we will take 81 to last dim by firstly squeezing and then transposing the sequence.
+    so shape of all the spectrograms will becom [x,81]
+    now we will pad these spectrograms and keep batchfirst= True
+    we will also unsqueeze the spectrograms after the padding and to take back the spectrograms to there original shape we will again transpose them
+    shape after paddding(without unsqueeze and transpose) -> [batch,y,81]  y -> max of all the x's (decided by the rnn.pad_sequence funciton)
+    shape after paddding(with unsqueeze and transpose) -> [batch,1,81,y], which is the original shape of spectrogram
+
+
+    The lstm process each batch independently, so we donot have to worry about different batches with different time dimension.
     """
 
     spectrogram_list = []
