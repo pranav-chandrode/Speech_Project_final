@@ -176,3 +176,5 @@ LibriSpeech/
 save_json/
 test.py
 test2.py
+TensorBoardLogs
+saved_model
